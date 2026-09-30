@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support Ticket Intake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6F4;
+    --card:#FFFFFF;
+    --ink:#1C2420;
+    --ink-soft:#5B655F;
+    --line:#DCE2DD;
+    --line-soft:#EAEEE9;
+    --teal:#0E6B65;
+    --teal-deep:#0A4F4B;
+    --teal-wash:#E7F1EF;
+    --amber:#B8722C;
+    --amber-wash:#FBF0E3;
+    --danger:#B4432F;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', -apple-system, sans-serif;
+    line-height:1.5;
+    padding:40px 20px 80px;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+
+  .masthead{margin-bottom:28px;}
+  .masthead .tag{
+    font-size:13px; color:var(--teal-deep); font-weight:600;
+    display:inline-block; background:var(--teal-wash);
+    padding:4px 10px; border-radius:6px; margin-bottom:14px;
+  }
+  h1{font-size:26px; font-weight:700; margin:0 0 8px; letter-spacing:-0.01em;}
+  .sub{color:var(--ink-soft); font-size:15px; margin:0; max-width:52ch;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:28px;
+    margin-bottom:20px;
+  }
+
+  .field{margin-bottom:20px;}
+  .field:last-child{margin-bottom:0;}
+  label{display:block; font-size:14px; font-weight:600; margin-bottom:6px;}
+  label .opt{font-weight:400; color:var(--ink-soft); font-size:13px;}
+  .hint{font-size:13px; color:var(--ink-soft); margin:4px 0 0;}
+
+  input[type=text], input[type=tel], textarea, select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:11px 13px;
+    font-size:15px;
+    font-family:inherit;
+    color:var(--ink);
+    background:#fff;
+    transition:border-color .15s;
+  }
+  input:focus, textarea:focus, select:focus{
+    outline:none;
+    border-color:var(--teal);
+    box-shadow:0 0 0 3px var(--teal-wash);
+  }
+  textarea{resize:vertical; min-height:80px;}
+
+  /* contact type toggle */
+  .toggle-group{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .toggle-btn{
+    padding:16px 14px;
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    background:#fff;
+    cursor:pointer;
+    text-align:left;
+    font-family:inherit;
+    transition:border-color .15s, background .15s;
+  }
+  .toggle-btn:hover{border-color:#B7C4BE;}
+  .toggle-btn .t-title{font-weight:600; font-size:15px; display:block; margin-bottom:2px;}
+  .toggle-btn .t-desc{font-size:13px; color:var(--ink-soft);}
+  .toggle-btn.active{
+    border-color:var(--teal);
+    background:var(--teal-wash);
+  }
+  .toggle-btn.active .t-title{color:var(--teal-deep);}
+
+  /* address confirm */
+  .confirm-row{
+    display:flex; align-items:flex-start; gap:10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 13px;
+    background:var(--line-soft);
+  }
+  .confirm-row input[type=checkbox]{margin-top:3px; width:16px; height:16px; accent-color:var(--teal);}
+  .confirm-row .ctext{font-size:14px;}
+  .confirm-row .ctext b{display:block; font-size:13px; color:var(--ink-soft); font-weight:500; margin-top:2px;}
+
+  #addressEditWrap{margin-top:10px; display:none;}
+  #addressEditWrap.show{display:block;}
+
+  /* photo upload */
+  .drop{
+    border:1.5px dashed #B7C4BE;
+    border-radius:8px;
+    padding:22px;
+    text-align:center;
+    cursor:pointer;
+    background:var(--line-soft);
+    transition:border-color .15s, background .15s;
+  }
+  .drop:hover{border-color:var(--teal); background:var(--teal-wash);}
+  .drop p{margin:0; font-size:14px; color:var(--ink-soft);}
+  .drop strong{color:var(--teal-deep);}
+  #fileInput{display:none;}
+  .thumbs{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  .thumb{
+    width:64px; height:64px; border-radius:6px; overflow:hidden;
+    border:1px solid var(--line); position:relative; background:#eee;
+  }
+  .thumb img{width:100%; height:100%; object-fit:cover;}
+  .thumb .rm{
+    position:absolute; top:2px; right:2px; background:rgba(0,0,0,.6);
+    color:#fff; border:none; border-radius:4px; width:18px; height:18px;
+    font-size:12px; line-height:1; cursor:pointer;
+  }
+
+  .slot-row{display:flex; gap:10px; margin-bottom:10px;}
+  .slot-row:last-child{margin-bottom:0;}
+  .slot-num{
+    width:26px; height:26px; border-radius:50%; background:var(--teal-wash);
+    color:var(--teal-deep); font-size:13px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:9px;
+  }
+
+  .section-title{
+    font-size:13px; font-weight:600; color:var(--teal-deep);
+    margin:0 0 16px; padding-bottom:10px; border-bottom:1px solid var(--line-soft);
+  }
+
+  .cta{
+    width:100%;
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:14px;
+    font-size:15px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .cta:hover{background:var(--teal-deep);}
+  .cta:disabled{background:#B7C4BE; cursor:not-allowed;}
+
+  .errbox{
+    display:none;
+    background:var(--amber-wash);
+    border:1px solid #E7C79A;
+    color:#7A4A17;
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:13.5px;
+    margin-bottom:18px;
+  }
+  .errbox.show{display:block;}
+
+  #summaryWrap{display:none;}
+  #summaryWrap.show{display:block;}
+  #summaryText{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px;
+    font-family:'IBM Plex Sans', monospace;
+    font-size:13.5px;
+    white-space:pre-wrap;
+    background:var(--line-soft);
+    min-height:220px;
+  }
+  .copy-btn{
+    margin-top:10px;
+    background:#fff;
+    border:1.5px solid var(--teal);
+    color:var(--teal-deep);
+    padding:10px 16px;
+    border-radius:8px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .copy-btn:hover{background:var(--teal-wash);}
+  .copied{color:var(--teal-deep); font-size:13px; margin-left:10px; opacity:0; transition:opacity .2s;}
+  .copied.show{opacity:1;}
+
+  .hidden-section{display:none;}
+  .hidden-section.show{display:block;}
+
+  @media (max-width:480px){
+    .toggle-group{grid-template-columns:1fr;}
+  }
+
+  .reset-link{
+    display:block; text-align:center; margin-top:18px;
+    color:var(--ink-soft); font-size:13.5px; cursor:pointer; text-decoration:underline;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <span class="tag">Support intake</span>
+    <h1>Tell us what's going on</h1>
+    <p class="sub">Fill this out before you call or message us — it helps our team pull up your order and get straight to a fix.</p>
+  </div>
+
+  <form id="ticketForm">
+
+    <div class="card">
+      <div class="field" style="margin-bottom:0;">
+        <label>What's this about?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn" data-type="item" id="btnItem">
+            <span class="t-title">Item issue</span>
+            <span class="t-desc">Wrong, damaged, or missing item</span>
+          </button>
+          <button type="button" class="toggle-btn" data-type="assembly" id="btnAssembly">
+            <span class="t-title">Assembly scheduling</span>
+            <span class="t-desc">Book someone to assemble equipment</span>
+          </button>
+          <button type="button" class="toggle-btn" data-type="orderchange" id="btnOrderChange">
+            <span class="t-title">Order change</span>
+            <span class="t-desc">Update an order that hasn't shipped</span>
+          </button>
+          <button type="button" class="toggle-btn" data-type="return" id="btnReturn">
+            <span class="t-title">Return request</span>
+            <span class="t-desc">Send an item back</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="errbox" id="errBox">Select what this is about, and fill in the highlighted fields, before generating your ticket.</div>
+
+    <!-- shared fields -->
+    <div class="card hidden-section" id="sharedFields">
+      <p class="section-title">Order details</p>
+
+      <div class="field">
+        <label for="orderNum">Order number</label>
+        <input type="text" id="orderNum" placeholder="e.g. 174154 or 3BX23BAT">
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label>Confirm your address</label>
+        <div class="confirm-row">
+          <input type="checkbox" id="addrConfirm">
+          <span class="ctext">The address on file for this order is correct.
+            <b id="addrToggleText" style="cursor:pointer; text-decoration:underline;">It's changed — let me enter the new one</b>
+          </span>
+        </div>
+        <div id="addressEditWrap">
+          <textarea id="addressNew" placeholder="New shipping address" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- item issue fields -->
+    <div class="card hidden-section" id="itemFields">
+      <p class="section-title">Item issue details</p>
+
+      <div class="field">
+        <label for="itemIssueType">Item issue</label>
+        <select id="itemIssueType">
+          <option value="">Select one…</option>
+          <option>Wrong item received</option>
+          <option>Item arrived damaged</option>
+          <option>Item missing from order</option>
+          <option>Item quality concern</option>
+          <option>Missing parts</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="itemDesc">Description of what was received</label>
+        <textarea id="itemDesc" placeholder="Describe what arrived, including any labels, sizes, or model numbers you can see" rows="3"></textarea>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label>Photo of what was received <span class="opt">(if applicable)</span></label>
+        <div class="drop" id="dropZone">
+          <p><strong>Click to upload</strong> or drag a photo here</p>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+    </div>
+
+    <!-- assembly fields -->
+    <div class="card hidden-section" id="assemblyFields">
+      <p class="section-title">Assembly scheduling details</p>
+
+      <div class="field">
+        <label for="assemblyItem">Item requiring assembly</label>
+        <input type="text" id="assemblyItem" placeholder="e.g. hospital bed, wheelchair, lift chair">
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label>Three possible time slots</label>
+        <p class="hint" style="margin-bottom:10px;">Give us three options so we can match you with an available technician.</p>
+        <div class="slot-row">
+          <span class="slot-num">1</span>
+          <input type="text" id="slot1" placeholder="e.g. Tue Oct 1, 9am–12pm">
+        </div>
+        <div class="slot-row">
+          <span class="slot-num">2</span>
+          <input type="text" id="slot2" placeholder="e.g. Wed Oct 2, 1pm–4pm">
+        </div>
+        <div class="slot-row">
+          <span class="slot-num">3</span>
+          <input type="text" id="slot3" placeholder="e.g. Thu Oct 3, anytime">
+        </div>
+      </div>
+    </div>
+
+    <!-- order change fields -->
+    <div class="card hidden-section" id="orderChangeFields">
+      <p class="section-title">Order change details</p>
+
+      <div class="field">
+        <label for="changeType">What needs to change</label>
+        <select id="changeType">
+          <option value="">Select one…</option>
+          <option>Change item</option>
+          <option>Change quantity</option>
+          <option>Change delivery date</option>
+          <option>Cancel order</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label for="changeDetails">Details</label>
+        <textarea id="changeDetails" placeholder="Tell us exactly what should change" rows="3"></textarea>
+      </div>
+    </div>
+
+    <!-- return request fields -->
+    <div class="card hidden-section" id="returnFields">
+      <p class="section-title">Return request details</p>
+
+      <div class="field">
+        <label for="returnItem">Item(s) being returned</label>
+        <input type="text" id="returnItem" placeholder="e.g. wheelchair, model #123">
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label for="returnReason">Reason for return</label>
+        <select id="returnReason">
+          <option value="">Select one…</option>
+          <option>No longer needed</option>
+          <option>Doesn't fit / wrong size</option>
+          <option>Item quality concern</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <button type="submit" class="cta hidden-section" id="submitBtn" disabled>Generate ticket summary</button>
+  </form>
+
+  <div class="card" id="summaryWrap">
+    <p class="section-title">Ticket summary</p>
+    <p class="hint" style="margin-bottom:10px;">Copy this and send it to support, or read it out when you call.</p>
+    <textarea id="summaryText" readonly></textarea>
+    <div>
+      <button class="copy-btn" id="copyBtn" type="button">Copy to clipboard</button>
+      <span class="copied" id="copiedMsg">Copied ✓</span>
+    </div>
+  </div>
+
+  <span class="reset-link" id="resetLink">Start over</span>
+
+</div>
+
+<script>
+(function(){
+  let contactType = null;
+  let photos = []; // {name, dataUrl}
+
+  const btnItem = document.getElementById('btnItem');
+  const btnAssembly = document.getElementById('btnAssembly');
+  const btnOrderChange = document.getElementById('btnOrderChange');
+  const btnReturn = document.getElementById('btnReturn');
+  const sharedFields = document.getElementById('sharedFields');
+  const itemFields = document.getElementById('itemFields');
+  const assemblyFields = document.getElementById('assemblyFields');
+  const orderChangeFields = document.getElementById('orderChangeFields');
+  const returnFields = document.getElementById('returnFields');
+  const submitBtn = document.getElementById('submitBtn');
+  const errBox = document.getElementById('errBox');
+  const form = document.getElementById('ticketForm');
+  const summaryWrap = document.getElementById('summaryWrap');
+  const summaryText = document.getElementById('summaryText');
+
+  function selectType(type){
+    contactType = type;
+    btnItem.classList.toggle('active', type==='item');
+    btnAssembly.classList.toggle('active', type==='assembly');
+    btnOrderChange.classList.toggle('active', type==='orderchange');
+    btnReturn.classList.toggle('active', type==='return');
+    sharedFields.classList.add('show');
+    itemFields.classList.toggle('show', type==='item');
+    assemblyFields.classList.toggle('show', type==='assembly');
+    orderChangeFields.classList.toggle('show', type==='orderchange');
+    returnFields.classList.toggle('show', type==='return');
+    submitBtn.classList.add('show');
+    errBox.classList.remove('show');
+    summaryWrap.classList.remove('show');
+  }
+
+  btnItem.addEventListener('click', ()=>selectType('item'));
+  btnAssembly.addEventListener('click', ()=>selectType('assembly'));
+  btnOrderChange.addEventListener('click', ()=>selectType('orderchange'));
+  btnReturn.addEventListener('click', ()=>selectType('return'));
+
+  // address confirm toggle
+  const addrToggleText = document.getElementById('addrToggleText');
+  const addressEditWrap = document.getElementById('addressEditWrap');
+  addrToggleText.addEventListener('click', ()=>{
+    addressEditWrap.classList.toggle('show');
+  });
+
+  // photo upload
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const thumbs = document.getElementById('thumbs');
+
+  dropZone.addEventListener('click', ()=>fileInput.click());
+  fileInput.addEventListener('change', (e)=>handleFiles(e.target.files));
+  dropZone.addEventListener('dragover', (e)=>{e.preventDefault(); dropZone.style.borderColor='var(--teal)';});
+  dropZone.addEventListener('dragleave', ()=>{dropZone.style.borderColor='';});
+  dropZone.addEventListener('drop', (e)=>{
+    e.preventDefault();
+    dropZone.style.borderColor='';
+    handleFiles(e.dataTransfer.files);
+  });
+
+  function handleFiles(fileList){
+    Array.from(fileList).forEach(file=>{
+      if(!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        photos.push({name:file.name, dataUrl:ev.target.result});
+        renderThumbs();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderThumbs(){
+    thumbs.innerHTML = '';
+    photos.forEach((p, i)=>{
+      const div = document.createElement('div');
+      div.className = 'thumb';
+      div.innerHTML = `<img src="${p.dataUrl}" alt="${p.name}"><button type="button" class="rm" data-i="${i}">×</button>`;
+      thumbs.appendChild(div);
+    });
+    thumbs.querySelectorAll('.rm').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        photos.splice(parseInt(e.target.dataset.i), 1);
+        renderThumbs();
+      });
+    });
+  }
+
+  // form submit -> build summary
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!contactType){
+      errBox.textContent = "Select what this is about first.";
+      errBox.classList.add('show');
+      return;
+    }
+
+    const orderNum = document.getElementById('orderNum').value.trim();
+    const addrConfirmed = document.getElementById('addrConfirm').checked;
+    const addressNew = document.getElementById('addressNew').value.trim();
+
+    if(!orderNum){
+      errBox.textContent = "Enter your order number before generating the summary.";
+      errBox.classList.add('show');
+      return;
+    }
+
+    let lines = [];
+    lines.push('SUPPORT TICKET SUMMARY');
+    lines.push('Generated: ' + new Date().toLocaleString());
+    lines.push('');
+    const typeLabels = {
+      item: 'Item issue',
+      assembly: 'Assembly scheduling',
+      orderchange: 'Order change',
+      return: 'Return request'
+    };
+    lines.push('Contact type: ' + typeLabels[contactType]);
+    lines.push('Order #: ' + orderNum);
+
+    if(addressNew){
+      lines.push('Address: CHANGED — ' + addressNew);
+    } else if(addrConfirmed){
+      lines.push('Address: Confirmed as on file');
+    } else {
+      lines.push('Address: Not confirmed — please verify with customer');
+    }
+
+    lines.push('');
+
+    if(contactType === 'item'){
+      const issueType = document.getElementById('itemIssueType').value;
+      const desc = document.getElementById('itemDesc').value.trim();
+
+      if(!issueType){
+        errBox.textContent = "Select an item issue type before generating the summary.";
+        errBox.classList.add('show');
+        return;
+      }
+
+      lines.push('Item issue: ' + issueType);
+      lines.push('Description of item received: ' + (desc || '(not provided)'));
+      lines.push('Photo attached: ' + (photos.length ? photos.length + ' photo(s) — see uploads' : 'None provided'));
+    } else if(contactType === 'assembly'){
+      const item = document.getElementById('assemblyItem').value.trim();
+      const s1 = document.getElementById('slot1').value.trim();
+      const s2 = document.getElementById('slot2').value.trim();
+      const s3 = document.getElementById('slot3').value.trim();
+
+      if(!item || !s1 || !s2 || !s3){
+        errBox.textContent = "Fill in the item and all three time slots before generating the summary.";
+        errBox.classList.add('show');
+        return;
+      }
+
+      lines.push('Item requiring assembly: ' + item);
+      lines.push('Time slot 1: ' + s1);
+      lines.push('Time slot 2: ' + s2);
+      lines.push('Time slot 3: ' + s3);
+    } else if(contactType === 'orderchange'){
+      const changeType = document.getElementById('changeType').value;
+      const changeDetails = document.getElementById('changeDetails').value.trim();
+
+      if(!changeType || !changeDetails){
+        errBox.textContent = "Select what needs to change and add details before generating the summary.";
+        errBox.classList.add('show');
+        return;
+      }
+
+      lines.push('Change requested: ' + changeType);
+      lines.push('Details: ' + changeDetails);
+    } else if(contactType === 'return'){
+      const returnItem = document.getElementById('returnItem').value.trim();
+      const returnReason = document.getElementById('returnReason').value;
+
+      if(!returnItem || !returnReason){
+        errBox.textContent = "Fill in the item and reason before generating the summary.";
+        errBox.classList.add('show');
+        return;
+      }
+
+      lines.push('Item(s) returning: ' + returnItem);
+      lines.push('Reason: ' + returnReason);
+    }
+
+    errBox.classList.remove('show');
+    summaryText.value = lines.join('\n');
+    summaryWrap.classList.add('show');
+    summaryWrap.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', ()=>{
+    summaryText.select();
+    document.execCommand('copy');
+    const msg = document.getElementById('copiedMsg');
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'), 1800);
+  });
+
+  document.getElementById('resetLink').addEventListener('click', ()=>{
+    form.reset();
+    photos = [];
+    renderThumbs();
+    contactType = null;
+    btnItem.classList.remove('active');
+    btnAssembly.classList.remove('active');
+    btnOrderChange.classList.remove('active');
+    btnReturn.classList.remove('active');
+    sharedFields.classList.remove('show');
+    itemFields.classList.remove('show');
+    assemblyFields.classList.remove('show');
+    orderChangeFields.classList.remove('show');
+    returnFields.classList.remove('show');
+    submitBtn.classList.remove('show');
+    summaryWrap.classList.remove('show');
+    errBox.classList.remove('show');
+    addressEditWrap.classList.remove('show');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+})();
+</script>
+
+</body>
+</html>
